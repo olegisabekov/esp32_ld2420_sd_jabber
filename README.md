@@ -9,7 +9,7 @@
 
 # Hardware Requirements
 
-  - Arduino board (Uno, Nano, ESP32, etc.)
+  - Arduino board (ESP32, etc.)
   - HLK LD2420 radar sensor
   - CDCard reader
   - Connecting wires
