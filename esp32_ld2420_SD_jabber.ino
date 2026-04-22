@@ -64,6 +64,7 @@ LD2420 radar;  // Use default constructor
 Settings settings;
 
 const uint8_t Flg_debug = 1;
+const uint8_t Xmpp_debug = 0;
 
 
 // Detection zones
@@ -98,6 +99,7 @@ long oldIndexZone;
 
 void setup_wifi() {
   debug_str("Connecting to ", settings.ToChar(2));
+  debug_str("Password", settings.ToChar(3));
   WiFi.mode(WIFI_STA); // Set ESP32 to Station mode (to connect to an AP) [1, 6]
   WiFi.begin(settings.ToChar(2), settings.ToChar(3));
   while (WiFi.status() != WL_CONNECTED) 
@@ -136,7 +138,7 @@ void setup()
   // pause usb redirect network
   uint32_t pause_net_usb = 100;  
   while(--pause_net_usb)
-    delay(100);
+    delay(10);
   // Initialize Serial Monitor
   Serial.begin(115200);
   while (!Serial)
@@ -145,7 +147,7 @@ void setup()
   settings.SetFileName((char *)Filename);
   if(settings.initSDCard() == 0)
   {
-    if(settings.ReadSettings(NameSection) < 0 )
+    if(settings.Read(NameSection) < 0 )
     {
       digitalWrite( ERROR_LED, HIGH );
       while (1) delay(1000);
@@ -202,15 +204,13 @@ void setup()
   }
   debug_str("\nTime synchronized");
 
-  pause_net_usb = 10;
-  while(--pause_net_usb)
-    delay(100);
+  //while (1) { delay(1000); Serial.print("|"); }
 
   client.setCACert(root_cert);
   // Inform the library that we want to start in plain text mode first
   client.setInsecure(); 
   client.setPlainStart();
-  if(Flg_debug)
+  if(Xmpp_debug)
     xmpp.setSerial(&Serial);
   xmpp.setClient(&client);
   debug_str(settings.ToChar(5));
@@ -219,7 +219,7 @@ void setup()
   debug_str(settings.ToChar(4));
   debug_str(settings.ToChar(7));
   xmpp.setConnectionData(settings.ToChar(5), settings.ToChar(8), settings.ToChar(11), settings.ToChar(4), settings.ToChar(7));
-  if(client.connect(settings.ToChar(4), settings.ToInt(9))) 
+  if(client.connect(settings.ToChar(4), settings.ToInt(9)))
   {
     debug_str("Connected to server in plain mode");
     // Send the STARTTLS command
@@ -303,7 +303,7 @@ void loop()
         flg_woke_up = false;
     oldIndexZone = CurrentIndexZone;
   }
-  if(( RadarActive == LOW ) && CurrentIndexZone >= 3  && (( mil - updateActive ) > settings.ToInt(10)))
+  if(RadarActive == LOW && CurrentIndexZone >= 3  && ((mil - updateActive) > (settings.ToInt(10) * 60000)))
   {
     digitalWrite( INFO_LED, LOW );
     SendMessage("Я спать." );

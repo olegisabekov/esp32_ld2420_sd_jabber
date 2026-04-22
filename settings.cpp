@@ -75,26 +75,37 @@ void Settings::printErrorMessage(uint8_t e, bool eol = true)
   if (eol)
     Serial.println();
 }
-
-char* Settings::NewValue(int i, const char* v)
+short Settings::Add(const uint16_t &index, const char *name)
 {
-  FreeValue(i);
-  listsetting[i].str = (char*) malloc(strlen(v) + 1);
-  strcpy(listsetting[i].str, v);
-  return listsetting[i].str;
+  return 0;
+}
+void Settings::NewValue(int i, const char* v)
+{
+  Free(i);
+  listdata[i].value = malloc(strlen(v) + 1);
+  listdata[i].val_type = Value_type::simbol;
+  strcpy((char *)listdata[i].value, v);
 }
 
-void Settings::FreeValue(int i)
+void Settings::NewValue(int i, const int v)
 {
-  if(listsetting[i].str)
+  Free(i);
+  listdata[i].value = malloc(sizeof(v));
+  *((int* )listdata[i].value) = v;
+  listdata[i].val_type = Value_type::number;
+}
+
+void Settings::Free(int i)
+{
+  if(listdata[i].value)
   {
-    Serial.printf("delete\n");
-    free(listsetting[i].str);
-    listsetting[i].str = nullptr;
+    free(listdata[i].value);
+    listdata[i].value = nullptr;
+    listdata[i].val_type = Value_type::none;
   }
 }
 
-short Settings::ReadSettings(const char* ns)
+short Settings::Read(const char* ns)
 {
   IniFile ini(FileName);
   if (!ini.open()) 
@@ -114,17 +125,28 @@ short Settings::ReadSettings(const char* ns)
   }
   debug_str("Ini file opened successfully. Reading settings:");
   
-  for( int i = 0; i < count_settings; i++)
+  for(uint16_t i = 0; i < count_settings; i++)
   {
-    if(!ini.getValue(ns, listsetting[i].name, buffer, bufferLen))
+    if(!ini.getValue(ns, listdata[i].name, buffer, bufferLen))
     {
       printErrorMessage(ini.getError());
       return -2 - i;
     }
-    NewValue(i, buffer);
-    debug_str(listsetting[i].name, listsetting[i].str);
+    char *endptr;
+	  int tmp = strtoul(buffer, &endptr, 10);
+	  if(endptr == buffer) //string
+    {
+      NewValue(i, buffer);
+      debug_str(listdata[i].name, ToChar(listdata[i].index));
+    }
+    else
+	    if(*endptr == '\0') //number
+      {
+		    NewValue(i, tmp);
+        debug_str(listdata[i].name, ToInt(listdata[i].index));
+	    }
+    
   }
-  
   ini.close();
   return 0;
 }
