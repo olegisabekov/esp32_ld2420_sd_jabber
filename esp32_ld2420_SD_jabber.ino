@@ -81,8 +81,10 @@ DetectionZone zones[] = {
   {1, 0, 50, "Очень близко", false, 0},
   {2, 51, 150, "Близко", false, 0},
   {3, 151, 200, "Рядом", false, 0},
-  {4, 201, 300, "Далеко", false, 0},
-  {5, 301, 601, "Очень далеко", false, 0}
+  {4, 201, 250, "Недалеко", false, 0},
+  {5, 251, 300, "Далековато", false, 0},
+  {6, 301, 400, "Далеко", false, 0},
+  {7, 401, 801, "Очень далеко", false, 0}
 };
 
 const int NUM_ZONES = sizeof(zones) / sizeof(zones[0]);
@@ -329,7 +331,7 @@ void loop()
     if(oldIndexZone == isz && CurrentIndexZone == isz - 1)
     {
       String str = "Нарушение периметра охраны. Расстояние: ";
-      str += GetNameZone(CurrentIndexZone);
+      str += GetNameZone(oldIndexZone);
       SendMessage(str.c_str());
     }
     oldIndexZone = CurrentIndexZone;
