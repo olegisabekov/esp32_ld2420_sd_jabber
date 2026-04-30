@@ -1,0 +1,2 @@
+# into .arduino15/packages/esp32/hardware/esp32/3.3.8/platform.txt
+compiler.cpp.extra_flags=-DTESTMODE
